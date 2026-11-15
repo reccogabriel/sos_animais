@@ -1,0 +1,176 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<style>
+    .resultado-container {
+        max-width: 540px;
+        margin: 0 auto 32px;
+        color: #212529;
+    }
+
+    .resultado-container h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .resultado-container .identificacao {
+        color: #495057;
+        margin-bottom: 4px;
+    }
+
+    .confirmacao {
+        padding: 16px;
+        margin: 20px 0;
+        background: #eaf5ed;
+        color: #153e25;
+        border: 2px solid #27633c;
+        border-radius: 10px;
+    }
+
+    .confirmacao h2 {
+        font-size: 1.15rem;
+        margin-bottom: 8px;
+    }
+
+    .resumo {
+        border: 1px solid #68737d;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 16px;
+        background: #fff;
+    }
+
+    .resumo h2 {
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+    }
+
+    .resumo dt {
+        font-weight: 600;
+        margin-top: 12px;
+        color: #343a40;
+    }
+
+    .resumo dd {
+        margin: 3px 0 0;
+        overflow-wrap: anywhere;
+    }
+
+    .estado {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 6px 10px;
+        border: 1px solid #27633c;
+        border-radius: 6px;
+        color: #153e25;
+        background: #eaf5ed;
+    }
+
+    .aviso {
+        padding: 14px;
+        margin-bottom: 20px;
+        border-left: 4px solid #084298;
+        background: #eef4ff;
+        color: #17365d;
+    }
+
+    .resultado-container .btn {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: normal;
+    }
+
+    .resultado-container .btn-primary {
+        background: #084298;
+        border-color: #084298;
+    }
+
+    .resultado-container .btn-outline-secondary {
+        color: #343a40;
+        border-color: #495057;
+    }
+
+    .resultado-container .btn-outline-secondary:hover {
+        color: #fff;
+        background: #343a40;
+    }
+
+    .resultado-container a:focus-visible {
+        outline: 3px solid #111827;
+        outline-offset: 3px;
+    }
+</style>
+
+<main class="resultado-container">
+    <p class="identificacao">
+        SOS Animais de Olímpia
+    </p>
+
+    <h1>Resultado da adoção</h1>
+
+    <p>
+        Confira o resultado da demonstração
+        e escolha o próximo passo.
+    </p>
+
+    <section class="confirmacao" role="status" aria-labelledby="titulo-confirmacao">
+        <h2 id="titulo-confirmacao">
+            <span aria-hidden="true">&#10003;</span>
+            Simulação validada
+        </h2>
+
+        <p class="mb-0">
+            Os campos obrigatórios e a data passaram
+            pela validação do formulário.
+        </p>
+    </section>
+
+    <section class="resumo" aria-labelledby="titulo-resumo">
+        <h2 id="titulo-resumo">
+            Resumo dos dados fictícios
+        </h2>
+
+        <dl class="mb-0">
+            <dt>Animal selecionado</dt>
+            <dd>{{ resultado.animal }}</dd>
+
+            <dt>Nome do adotante</dt>
+            <dd>{{ resultado.nome_adotante }}</dd>
+
+            <dt>Telefone do adotante</dt>
+            <dd>{{ resultado.telefone }}</dd>
+
+            <dt>Data da adoção informada</dt>
+            <dd>{{ resultado.data_adocao }}</dd>
+
+            <dt>Estado da demonstração</dt>
+            <dd>
+                <span class="estado">
+                    Validação concluída — sem gravação
+                </span>
+            </dd>
+        </dl>
+    </section>
+
+    <aside class="aviso" aria-label="Limites do protótipo">
+        <p class="mb-0">
+            Protótipo acadêmico: nenhuma adoção foi
+            registrada. O status do animal não foi
+            alterado. Os dados são usados apenas
+            nesta demonstração.
+        </p>
+    </aside>
+
+    <nav class="d-grid gap-2" aria-label="Próximos passos">
+        <a href="{% url 'registrar_adocao' %}" class="btn btn-primary">
+            Simular outra adoção
+        </a>
+
+        <a href="{% url 'menu' %}" class="btn btn-outline-secondary">
+            Voltar ao menu
+        </a>
+    </nav>
+</main>
+{% endblock %}

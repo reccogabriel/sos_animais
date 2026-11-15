@@ -1,0 +1,130 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<style>
+    .adocao-container {
+        max-width: 540px;
+        margin: 0 auto 32px;
+    }
+
+    .adocao-container h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .adocao-container .form-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .adocao-container input,
+    .adocao-container select,
+    .adocao-container .btn {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    .adocao-container input,
+    .adocao-container select {
+        border: 1px solid #68737d;
+    }
+
+    .adocao-container :is(a, button, input, select):focus-visible {
+        outline: 3px solid #111827;
+        outline-offset: 3px;
+    }
+
+    .adocao-container .btn-primary {
+        background: #084298;
+        border-color: #084298;
+    }
+
+    .adocao-container .btn-outline-secondary {
+        color: #343a40;
+        border-color: #495057;
+    }
+
+    .adocao-container .btn-outline-secondary:hover {
+        color: white;
+        background: #343a40;
+    }
+
+    .aviso-prototipo {
+        background: #eef4ff;
+        border-left: 4px solid #084298;
+        padding: 12px;
+        color: #17365d;
+    }
+
+    .erro-campo {
+        color: #842029;
+        margin-top: 6px;
+        font-weight: 600;
+    }
+</style>
+
+<main class="adocao-container">
+    <p class="text-secondary mb-1">
+        SOS Animais de Olímpia
+    </p>
+
+    <h1>Registrar adoção</h1>
+
+    <p>
+        Selecione o animal e informe os dados do adotante.
+        Todos os campos são obrigatórios.
+    </p>
+
+    <p class="aviso-prototipo">
+        Protótipo acadêmico: use apenas dados fictícios.
+        Nenhuma adoção será gravada.
+    </p>
+
+    {% if simulacao_concluida %}
+    <div class="alert alert-success" role="status">
+        <strong>Simulação concluída.</strong>
+        Os campos foram validados. Nenhuma adoção foi
+        gravada e o status do animal não foi alterado.
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for campo in form %}
+        <div class="mb-3">
+            <label for="{{ campo.id_for_label }}" class="form-label">
+                {{ campo.label }}
+            </label>
+
+            {{ campo }}
+
+            {% if campo.errors %}
+            <div id="erro_{{ campo.name }}" class="erro-campo" role="alert">
+                {% for erro in campo.errors %}
+                <p class="mb-0">
+                    Erro: {{ erro }}
+                </p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <p class="small">
+            Regra da adoção: somente animais disponíveis
+            podem ser adotados. A data não pode ser futura.
+        </p>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+                Validar adoção — demonstração
+            </button>
+
+            <a href="{% url 'menu' %}" class="btn btn-outline-secondary">
+                Voltar ao menu
+            </a>
+        </div>
+    </form>
+</main>
+{% endblock %}
