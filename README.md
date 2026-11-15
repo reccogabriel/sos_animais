@@ -187,3 +187,45 @@ ou tokens.
 - Configurar integração contínua.
 - Realizar duas rodadas de validação com a comunidade, mediante
   agendamento e concordância dos participantes.
+
+## Autorrevisão técnica do MVP
+
+### Arquitetura e separação de responsabilidades
+
+O modelo Animal e sua migração constituem a estrutura inicial de
+persistência. Sua existência não representa a conclusão do cadastro
+em tela nem a integração com o fluxo demonstrativo de adoção.
+
+O formulário demonstrativo permanece em core/views.py. Como melhoria
+de organização, está prevista sua extração para core/forms.py,
+separando a definição dos campos e suas validações da coordenação
+das requisições. Essa refatoração ainda não foi realizada.
+
+### Legibilidade e manutenção
+
+A documentação distingue funcionalidades implementadas, planejadas
+e demonstrativas. Essa separação evita interpretar o resultado da
+simulação como uma adoção efetivamente registrada.
+
+As próximas alterações devem manter nomes descritivos e testes
+compatíveis com as responsabilidades de cada componente.
+
+### Segurança e proteção de dados
+
+O protótipo demonstrativo deve utilizar dados fictícios. Não devem
+ser publicados dados pessoais reais, credenciais ou tokens.
+
+O .gitignore não substitui a verificação dos arquivos e do histórico
+antes da publicação. Remover um arquivo do rastreamento atual não
+elimina suas versões anteriores.
+
+A existência de login não comprova, isoladamente, a proteção de todas
+as rotas. A verificação de acesso sem autenticação às telas internas
+permanece como atividade de revisão e teste.
+
+### Limites desta revisão
+
+Este registro apresenta uma análise técnica do estado documentado
+do projeto e oportunidades de melhoria. Não comprova auditoria de
+segurança, revisão independente, execução de novos testes ou
+implementação das melhorias propostas.
