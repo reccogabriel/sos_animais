@@ -1,0 +1,57 @@
+name: CI - Verificacoes e testes do MVP
+
+on:
+  push:
+    branches:
+      - main
+      - ci/testes-automatizados
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    name: Verificacoes e testes Django
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      SECRET_KEY: "chave-ficticia-exclusiva-de-testes-ci-nao-usar-em-producao"
+      DEBUG: "False"
+
+    steps:
+      - name: Obter codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.15.2"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install coverage==7.17.3
+          python -m pip check
+
+      - name: Registrar versoes do ambiente
+        run: |
+          python --version
+          python -m django --version
+          python -m coverage --version
+
+      - name: Verificar configuracao Django
+        run: python manage.py check
+
+      - name: Executar testes com cobertura
+        run: |
+          python -m coverage erase
+          python -m coverage run --source=core --omit="*/migrations/*,*/tests.py,*/tests/*" manage.py test core --verbosity 2
+
+      - name: Mostrar cobertura
+        run: python -m coverage report -m

@@ -18,3 +18,9 @@ __pycache__/
 
 # Arquivos locais
 *.log
+
+# Resultados locais de cobertura
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
