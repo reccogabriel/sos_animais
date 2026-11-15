@@ -136,8 +136,8 @@ Com o ambiente virtual ativo:
 python manage.py test core --verbosity 2
 ```
 
-São seis testes de comportamento e validação sem acesso ao banco e um
-teste de integração entre o modelo e o banco.
+São sete testes: seis testes de comportamento e validação sem acesso
+ao banco e um teste de integração entre o modelo e o banco.
 
 Cenários:
 
