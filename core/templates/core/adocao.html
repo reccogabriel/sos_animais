@@ -50,6 +50,7 @@
     }
 
     .aviso-prototipo {
+        margin-bottom: 1rem;
         background: #eef4ff;
         border-left: 4px solid #084298;
         padding: 12px;
@@ -68,25 +69,26 @@
         SOS Animais de Olímpia
     </p>
 
-    <h1>Registrar adoção</h1>
+    <h1>Simular adoção</h1>
 
     <p>
-        Selecione o animal e informe os dados do adotante.
+        Selecione um animal fictício e informe os dados do adotante.
         Todos os campos são obrigatórios.
     </p>
 
-    <p class="aviso-prototipo">
-        Protótipo acadêmico: use apenas dados fictícios.
-        Nenhuma adoção será gravada.
-    </p>
-
-    {% if simulacao_concluida %}
-    <div class="alert alert-success" role="status">
-        <strong>Simulação concluída.</strong>
-        Os campos foram validados. Nenhuma adoção foi
-        gravada e o status do animal não foi alterado.
+    <div class="aviso-prototipo" role="note">
+        <p class="mb-2">
+            <strong>Protótipo acadêmico.</strong> Use apenas dados fictícios.
+        </p>
+        <ul class="mb-0">
+            <li>Os animais desta lista são fictícios e fixos no código.
+                Eles não vêm do cadastro de animais.</li>
+            <li>O sistema não consulta o banco de dados nem verifica
+                se o animal está disponível.</li>
+            <li>Nenhuma adoção é gravada e o status de nenhum animal
+                é alterado.</li>
+        </ul>
     </div>
-    {% endif %}
 
     <form method="post">
         {% csrf_token %}
@@ -98,6 +100,10 @@
             </label>
 
             {{ campo }}
+
+            {% if campo.help_text %}
+            <div class="form-text">{{ campo.help_text }}</div>
+            {% endif %}
 
             {% if campo.errors %}
             <div id="erro_{{ campo.name }}" class="erro-campo" role="alert">
@@ -112,13 +118,15 @@
         {% endfor %}
 
         <p class="small">
-            Regra da adoção: somente animais disponíveis
-            podem ser adotados. A data não pode ser futura.
+            O que esta demonstração verifica: campos preenchidos,
+            telefone com DDD e data que não seja futura. A regra
+            "somente animais disponíveis podem ser adotados" ainda
+            não é verificada, porque a lista não usa o banco.
         </p>
 
         <div class="d-grid gap-2">
             <button type="submit" class="btn btn-primary">
-                Validar adoção — demonstração
+                Validar dados (demonstração)
             </button>
 
             <a href="{% url 'menu' %}" class="btn btn-outline-secondary">

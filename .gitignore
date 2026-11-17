@@ -7,9 +7,22 @@ env/
 __pycache__/
 *.py[cod]
 
-# Banco de dados local
+# Banco de dados local (pode conter usuários, senhas e dados pessoais)
+db.sqlite3
 *.sqlite3
 *.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+
+# Cópias de segurança e exportações de dados
+*.bak
+*.dump
+backups/
+
+# Relatórios de testes
+.coverage
+htmlcov/
 
 # Configurações e credenciais locais
 .env
