@@ -1,3 +1,6 @@
+# Dependências do SOS Animais de Olímpia.
+# Requer Python 3.12 ou mais recente (exigência do Django 6.1).
+# Versões verificadas no GitHub Actions: Python 3.12, 3.13 e 3.14.
 asgiref==3.13.0
 Django==6.1.3
 python-dotenv==1.2.4

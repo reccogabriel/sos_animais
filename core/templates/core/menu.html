@@ -1,12 +1,34 @@
 {% extends 'core/base.html' %}
 {% block content %}
 <h1 class="text-center mb-4">SOS Animais de Olímpia</h1>
+
+{% if user.is_authenticated %}
+<p class="text-center text-secondary">
+    Conectado como {{ user.get_username }}
+</p>
+{% endif %}
+
 <div class="d-grid gap-3">
-    <a href="#" class="btn btn-primary btn-lg">Ficha do animal</a>
     <a href="{% url 'registrar_adocao' %}" class="btn btn-primary btn-lg">
-        Adoções e devoluções
+        Simular adoção (demonstração)
     </a>
-    <a href="#" class="btn btn-primary btn-lg">Doações e despesas</a>
-    <a href="#" class="btn btn-secondary btn-lg">Sair</a>
+
+    {# Funcionalidades ainda não implementadas: botões desativados, sem link. #}
+    <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-disabled="true">
+        Ficha do animal (em desenvolvimento)
+    </button>
+
+    <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-disabled="true">
+        Devoluções (em desenvolvimento)
+    </button>
+
+    <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-disabled="true">
+        Doações e despesas (em desenvolvimento)
+    </button>
+
+    <form method="post" action="{% url 'logout' %}" class="d-grid">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-lg">Sair</button>
+    </form>
 </div>
 {% endblock %}

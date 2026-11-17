@@ -1,19 +1,28 @@
-from datetime import date
+import re
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, resolve_url
+from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
+
+CHAVE_SESSAO_RESULTADO = "resultado_adocao_demo"
+
+# Apenas dígitos, espaços, parênteses, hífen e um "+" opcional no início.
+CARACTERES_TELEFONE = re.compile(r"\+?[0-9()\s-]+")
 
 
 class AdocaoPrototipoForm(forms.Form):
     animal = forms.ChoiceField(
-        label="Animal disponível",
+        label="Animal (fictício)",
         choices=[
-            ("", "Selecione um animal"),
-            ("rex", "Rex — cão, 3 anos, porte médio"),
-            ("luna", "Luna — gata, 2 anos, porte pequeno"),
+            ("", "Selecione um animal fictício"),
+            ("rex", "Rex, cão, 3 anos, porte médio (fictício)"),
+            ("luna", "Luna, gata, 2 anos, porte pequeno (fictícia)"),
         ],
     )
 
@@ -22,22 +31,15 @@ class AdocaoPrototipoForm(forms.Form):
         max_length=120,
     )
 
-    telefone = forms.RegexField(
+    telefone = forms.CharField(
         label="Telefone do adotante",
-        regex=r"^[0-9()+\s-]{10,20}$",
         max_length=20,
-        error_messages={
-            "invalid": (
-                "Informe um telefone com DDD, usando "
-                "números e, se necessário, espaços, "
-                "parênteses ou hífen."
-            ),
-        },
+        help_text="Com DDD. Exemplo: (17) 99999-0000",
     )
 
     data_adocao = forms.DateField(
         label="Data da adoção",
-        initial=date.today,
+        initial=timezone.localdate,
         widget=forms.DateInput(
             format="%Y-%m-%d",
             attrs={"type": "date"},
@@ -59,6 +61,13 @@ class AdocaoPrototipoForm(forms.Form):
                 "Preencha este campo para continuar."
             )
 
+        self.fields["telefone"].widget.attrs.update(
+            {
+                "inputmode": "tel",
+                "autocomplete": "tel",
+            }
+        )
+
         if self.is_bound:
             for nome in self.errors:
                 if nome in self.fields:
@@ -68,10 +77,37 @@ class AdocaoPrototipoForm(forms.Form):
                         f"erro_{nome}"
                     )
 
+    def clean_telefone(self):
+        valor = self.cleaned_data["telefone"].strip()
+
+        if not CARACTERES_TELEFONE.fullmatch(valor):
+            raise forms.ValidationError(
+                "Use apenas números e, se necessário, espaços, "
+                "parênteses, hífen ou o sinal + no início."
+            )
+
+        digitos = re.sub(r"\D", "", valor)
+
+        if valor.startswith("+"):
+            if not digitos.startswith("55"):
+                raise forms.ValidationError(
+                    "Informe um telefone do Brasil (+55) ou "
+                    "digite o número sem o código do país."
+                )
+            digitos = digitos[2:]
+
+        if len(digitos) not in (10, 11):
+            raise forms.ValidationError(
+                "Informe o DDD e o número: 10 dígitos para fixo "
+                "ou 11 dígitos para celular."
+            )
+
+        return valor
+
     def clean_data_adocao(self):
         valor = self.cleaned_data["data_adocao"]
 
-        if valor > date.today():
+        if valor > timezone.localdate():
             raise forms.ValidationError(
                 "A data da adoção não pode ser futura."
             )
@@ -79,9 +115,22 @@ class AdocaoPrototipoForm(forms.Form):
         return valor
 
 
+def _destino_seguro(request, destino):
+    """Retorna o destino apenas se ele for um endereço deste site."""
+    if destino and url_has_allowed_host_and_scheme(
+        destino,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return destino
+    return resolve_url(settings.LOGIN_REDIRECT_URL)
+
+
 def login_view(request):
+    proximo = request.POST.get("next") or request.GET.get("next", "")
+
     if request.user.is_authenticated:
-        return redirect("menu")
+        return redirect(_destino_seguro(request, proximo))
 
     if request.method == "POST":
         username = request.POST.get("username", "")
@@ -95,7 +144,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect("menu")
+            return redirect(_destino_seguro(request, proximo))
 
         messages.error(
             request,
@@ -105,10 +154,21 @@ def login_view(request):
     return render(
         request,
         "core/login.html",
+        {"next": proximo},
     )
 
 
-@login_required(login_url="login")
+@require_POST
+def logout_view(request):
+    logout(request)
+    messages.success(
+        request,
+        "Você saiu do sistema.",
+    )
+    return redirect(settings.LOGOUT_REDIRECT_URL)
+
+
+@login_required
 def menu_view(request):
     return render(
         request,
@@ -116,7 +176,7 @@ def menu_view(request):
     )
 
 
-@login_required(login_url="login")
+@login_required
 def registrar_adocao(request):
     form = AdocaoPrototipoForm(
         request.POST if request.method == "POST" else None
@@ -129,7 +189,9 @@ def registrar_adocao(request):
             form.fields["animal"].choices
         )
 
-        request.session["resultado_adocao_demo"] = {
+        # Demonstração: os dados ficam na sessão apenas até a tela de
+        # resultado ser exibida. Nada é gravado nas tabelas do sistema.
+        request.session[CHAVE_SESSAO_RESULTADO] = {
             "animal": nomes_animais[dados["animal"]],
             "nome_adotante": dados["nome_adotante"],
             "telefone": dados["telefone"],
@@ -147,10 +209,13 @@ def registrar_adocao(request):
     )
 
 
-@login_required(login_url="login")
+@login_required
 def resultado_adocao(request):
-    resultado = request.session.get(
-        "resultado_adocao_demo"
+    # pop() lê e já remove nome e telefone do adotante da sessão.
+    # Ao recarregar a página, a pessoa volta para o formulário.
+    resultado = request.session.pop(
+        CHAVE_SESSAO_RESULTADO,
+        None,
     )
 
     if not resultado:

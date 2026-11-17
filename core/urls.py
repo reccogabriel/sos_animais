@@ -8,6 +8,11 @@ urlpatterns = [
         name="login",
     ),
     path(
+        "sair/",
+        views.logout_view,
+        name="logout",
+    ),
+    path(
         "menu/",
         views.menu_view,
         name="menu",
