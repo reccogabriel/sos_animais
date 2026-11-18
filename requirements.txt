@@ -6,3 +6,8 @@ Django==6.1.3
 python-dotenv==1.2.4
 sqlparse==0.6.1
 tzdata==2026.6
+
+# Produção: PostgreSQL (Neon) e arquivos estáticos
+psycopg2-binary==2.9.13
+whitenoise==6.9.0
+dj-database-url==2.3.0

@@ -425,3 +425,14 @@ class ConfiguracaoTests(SimpleTestCase):
                 env_lista("ALLOWED_HOSTS"),
                 ["localhost", "127.0.0.1"],
             )
+
+class HealthCheckTests(TestCase):
+    def test_health_publico_sem_consultas_ao_banco(self):
+        with self.assertNumQueries(0):
+            resposta = self.client.get(reverse("health_check"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(
+            resposta.json(),
+            {"status": "ok", "app": "ok"},
+        )

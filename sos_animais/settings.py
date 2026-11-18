@@ -73,6 +73,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise: serve estáticos diretamente do Django (sem S3 / CDN extra)
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -102,13 +104,32 @@ WSGI_APPLICATION = "sos_animais.wsgi.application"
 
 
 # Banco de dados
+#
+# Em produção (DATABASE_URL definida), usa PostgreSQL via dj-database-url.
+# Em desenvolvimento local (sem DATABASE_URL), cai para SQLite.
+# A importação de dj_database_url é feita só quando necessária para não
+# exigir a biblioteca em ambientes que usam apenas SQLite.
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+_DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
+if _DATABASE_URL:
+    import dj_database_url as _dj_database_url  # noqa: F401 — instalado em produção
+
+    DATABASES = {
+        "default": _dj_database_url.config(
+            default=_DATABASE_URL,
+            conn_max_age=600,          # conexão persistente até 10 min
+            conn_health_checks=True,   # valida a conexão antes de reusar
+            ssl_require=True,          # Neon exige SSL
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Senhas
@@ -149,7 +170,17 @@ USE_TZ = True
 
 # Arquivos estáticos
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 
 # Mensagens: usa as classes de alerta do Bootstrap
@@ -166,3 +197,12 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+
+
+# Seguranca em producao.
+# Na Vercel, o redirecionamento HTTP para HTTPS e feito pela plataforma.
+# Se mudar de hospedagem, revise esta configuracao.
+
+if not DEBUG and _DATABASE_URL:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True

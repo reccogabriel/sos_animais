@@ -27,4 +27,12 @@ urlpatterns = [
         views.resultado_adocao,
         name="resultado_adocao",
     ),
+    # Endpoint público de saúde — verifica apenas a aplicação.
+    # Não executa consultas ao banco para não interferir com o
+    # scale-to-zero do Neon Free. Ver core/views.py para detalhes.
+    path(
+        "health/",
+        views.health_check,
+        name="health_check",
+    ),
 ]
