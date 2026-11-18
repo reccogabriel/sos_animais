@@ -31,3 +31,5 @@ htmlcov/
 
 # Arquivos locais
 *.log
+# Arquivos estaticos gerados no build
+/staticfiles/

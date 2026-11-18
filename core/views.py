@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -14,6 +15,39 @@ CHAVE_SESSAO_RESULTADO = "resultado_adocao_demo"
 
 # Apenas dígitos, espaços, parênteses, hífen e um "+" opcional no início.
 CARACTERES_TELEFONE = re.compile(r"\+?[0-9()\s-]+")
+
+
+# ---------------------------------------------------------------------------
+# Endpoint de saúde — /health/
+# ---------------------------------------------------------------------------
+# Propósito: monitoramento externo (UptimeRobot) via HTTP(S) GET.
+#
+# O que verifica:
+#   - Aplicação: sempre. O Django está em pé, o processo respondeu e a
+#     configuração básica carregou sem erro.
+#
+# O que NÃO verifica deliberadamente:
+#   - Banco de dados. Executar SELECT 1 a cada 5 minutos (intervalo mínimo
+#     do UptimeRobot gratuito) pode impedir o scale-to-zero do Neon, que
+#     suspende o compute após 5 minutos de inatividade. Manter o banco
+#     artificialmente ativo consumiria cotas de CU-hora desnecessariamente.
+#
+# Verificação do banco (manual, quando necessário):
+#   - Use o console SQL do Neon (dashboard > SQL Editor > SELECT 1).
+#   - Ou execute localmente com DATABASE_URL apontando para o Neon:
+#       python manage.py dbshell
+#   - Não aponte o UptimeRobot para uma rota que faça SELECT 1.
+#
+# O que NÃO expõe: versão interna, stack trace, dados de usuários,
+# SECRET_KEY, DATABASE_URL ou qualquer informação sensível.
+def health_check(request):
+    """
+    Verifica apenas a aplicação (não toca no banco de dados).
+
+    HTTP 200 → aplicação respondendo normalmente.
+    Nunca retorna 5xx — se o Django chegou aqui, está em pé.
+    """
+    return JsonResponse({"status": "ok", "app": "ok"})
 
 
 class AdocaoPrototipoForm(forms.Form):
