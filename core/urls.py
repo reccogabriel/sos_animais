@@ -1,38 +1,18 @@
 from django.urls import path
-from . import views
+from . import views, views_gestao as gestao
 
 urlpatterns = [
-    path(
-        "",
-        views.login_view,
-        name="login",
-    ),
-    path(
-        "sair/",
-        views.logout_view,
-        name="logout",
-    ),
-    path(
-        "menu/",
-        views.menu_view,
-        name="menu",
-    ),
-    path(
-        "adocoes/nova/",
-        views.registrar_adocao,
-        name="registrar_adocao",
-    ),
-    path(
-        "adocoes/resultado/",
-        views.resultado_adocao,
-        name="resultado_adocao",
-    ),
-    # Endpoint público de saúde — verifica apenas a aplicação.
-    # Não executa consultas ao banco para não interferir com o
-    # scale-to-zero do Neon Free. Ver core/views.py para detalhes.
-    path(
-        "health/",
-        views.health_check,
-        name="health_check",
-    ),
+    path("", views.login_view, name="login"),
+    path("sair/", views.logout_view, name="logout"),
+    path("menu/", views.menu_view, name="menu"),
+    path("health/", views.health_check, name="health_check"),
+    path("animais/", gestao.animais, name="animais_lista"),
+    path("animais/novo/", gestao.animal_novo, name="animal_novo"),
+    path("animais/<int:pk>/", gestao.animal_detalhe, name="animal_detalhe"),
+    path("adocoes/", gestao.adocoes, name="adocoes_lista"),
+    path("adocoes/nova/", gestao.adocao_nova, name="registrar_adocao"),
+    path("adocoes/resultado/", gestao.adocoes, name="resultado_adocao"),
+    path("adocoes/<int:pk>/", gestao.adocao_detalhe, name="adocao_detalhe"),
+    path("devolucoes/", gestao.devolucoes, name="devolucoes"),
+    path("financeiro/", gestao.financeiro, name="financeiro"),
 ]

@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>Devoluções</h1><p>O animal retorna à situação Acolhido. O histórico da adoção é preservado.</p><form method="post" class="my-4">{% csrf_token %}{% include 'core/gestao_campos.html' %}<button class="btn btn-primary">Registrar devolução</button></form><h2 class="h4">Histórico</h2>{% for obj in pagina %}<article class="card card-body mb-2"><h3 class="h5">{{ obj.adocao.animal.nome }}</h3><p>Adoção #{{ obj.adocao_id }} · {{ obj.data|date:"d/m/Y" }}</p><p>{{ obj.motivo|linebreaksbr }}</p></article>{% empty %}<p>Nenhuma devolução registrada.</p>{% endfor %}{% include 'core/gestao_paginas.html' %}
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}

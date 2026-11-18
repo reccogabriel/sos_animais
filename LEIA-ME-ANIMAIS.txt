@@ -1,0 +1,14 @@
+PACOTE: cadastro, busca, listagem paginada e consulta de animais.
+Copie o conteúdo sobre a raiz do projeto, mesclando as pastas. Não apague pastas existentes.
+Este pacote NÃO implementa adoções persistentes, devoluções, financeiro ou histórico de saúde.
+Não altera models.py, views.py, settings.py, base.html nem migrações.
+Preserva o fluxo de adoção demonstrativa e suas rotas.
+Se você já colou os trechos da resposta anterior, remova de core/views.py o bloco acrescentado de cadastro de animais para evitar código duplicado; preserve o conteúdo anterior desse arquivo.
+Faça backup ou use uma branch antes de substituir arquivos.
+Execute no seu ambiente: python manage.py check
+Execute: python manage.py showmigrations core
+A migração 0001_cria_modelo_animal deve estar aplicada no banco usado pelo ambiente testado.
+Se não estiver aplicada, confirme o banco de destino e faça backup antes de executar python manage.py migrate.
+Teste: acesso autenticado; cadastro fictício; busca; consulta; recarga; data futura rejeitada; bloqueio sem login.
+Apenas a análise sintática Python foi executada na geração do pacote; integração Django e Neon não foram executadas.
+Não inclua .env ou credenciais no commit.

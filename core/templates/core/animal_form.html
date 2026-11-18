@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1 class="mb-4">Cadastrar animal</h1>
+<p>A situação inicial será Acolhido.</p>
+<form method="post" class="mb-4">
+{% csrf_token %}
+{% if form.errors %}<div class="alert alert-danger" role="alert">Não foi possível salvar. Confira os campos abaixo.</div>{% endif %}
+{{ form.non_field_errors }}
+{% for field in form %}
+<div class="mb-3">
+<label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}{% if field.field.required %} (obrigatório){% endif %}</label>
+{{ field }}
+<div id="ajuda_{{ field.name }}" class="form-text">{{ field.help_text }}</div>
+<div id="erro_{{ field.name }}" class="text-danger">{% for error in field.errors %}<p class="mb-1">{{ error }}</p>{% endfor %}</div>
+</div>{% endfor %}
+<button type="submit" class="btn btn-primary">Salvar animal</button>
+<a href="{% url 'animais_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+</form>
+{% endblock %}

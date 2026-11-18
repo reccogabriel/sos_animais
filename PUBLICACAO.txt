@@ -1,0 +1,26 @@
+PACOTE INCREMENTAL SOBRE O PROJETO ENVIADO NA CONVERSA
+Implementa registros de adoção, devolução, financeiro e cadastro/consulta de animais.
+Inclui migração 0002; preserve a migração 0001_cria_modelo_animal existente.
+Não substitui settings.py, requirements.txt, base.html, views.py ou login.
+Não inclui edição/exclusão, prontuário de saúde, trilha de auditoria ou pagamentos online.
+Todos os usuários autenticados têm acesso aos registros; use contas restritas à equipe.
+Não é uma certificação de prontidão para uso com dados reais.
+Apenas sintaxe Python verificada na geração; não executado contra Django ou Neon.
+
+1. Faça cópia de segurança do projeto e do banco.
+2. Mescle a pasta core deste pacote na raiz do projeto. Não apague core.
+3. Não faça commit de .env nem venv.
+4. ANTES do deploy que utiliza as novas tabelas, aplique a migração ao Neon:
+   confirme que DATABASE_URL do terminal/local aponta ao MESMO banco Neon da Vercel.
+   No PowerShell, pode definir temporariamente (não compartilhe o valor):
+   $env:DATABASE_URL = 'COLE_A_CONEXAO_REAL_DO_NEON'
+   .\venv\Scripts\python.exe manage.py migrate
+   Somente continue se migrate concluir sem erro.
+   O comando altera o banco de destino; não o execute sem confirmar qual banco será afetado.
+5. Faça commit e push na main usando o IDE. Vercel deve iniciar novo deployment.
+6. Aguarde Ready e acesse o domínio público fixo autorizado.
+7. Em caso de erro, consulte logs sem ativar DEBUG em produção.
+
+O pacote muda a adoção de simulação para persistente. Use somente dados fictícios na apresentação.
+Não execute migrate automaticamente no início de cada requisição nem no import das views.
+O menu não mostra histórico de saúde, pois não foi implementado neste pacote.

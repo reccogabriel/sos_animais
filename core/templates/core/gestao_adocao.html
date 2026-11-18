@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>Adoção #{{ adocao.pk }}</h1><p>Registro salvo no banco de dados.</p><dl><dt>Animal</dt><dd>{{ adocao.animal.nome }}</dd><dt>Adotante</dt><dd>{{ adocao.nome_adotante }}</dd><dt>Telefone</dt><dd>{{ adocao.telefone }}</dd><dt>Data</dt><dd>{{ adocao.data|date:"d/m/Y" }}</dd><dt>Situação da adoção</dt><dd>{% if adocao.ativa %}Ativa{% else %}Encerrada por devolução{% endif %}</dd></dl>
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}
