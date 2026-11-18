@@ -1,34 +1,12 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h1 class="text-center mb-4">SOS Animais de Olímpia</h1>
-
-{% if user.is_authenticated %}
-<p class="text-center text-secondary">
-    Conectado como {{ user.get_username }}
-</p>
-{% endif %}
-
+<h1 class="mb-4">SOS Animais de Olímpia</h1><p>Conectado como {{ user.get_username }}</p>
 <div class="d-grid gap-3">
-    <a href="{% url 'registrar_adocao' %}" class="btn btn-primary btn-lg">
-        Simular adoção (demonstração)
-    </a>
-
-    {# Funcionalidades ainda não implementadas: botões desativados, sem link. #}
-    <a href="{% url 'animais_lista' %}" class="btn btn-outline-primary btn-lg">
-        Animais: cadastrar e consultar
-    </a>
-
-    <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-disabled="true">
-        Devoluções (em desenvolvimento)
-    </button>
-
-    <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-disabled="true">
-        Doações e despesas (em desenvolvimento)
-    </button>
-
-    <form method="post" action="{% url 'logout' %}" class="d-grid">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-secondary btn-lg">Sair</button>
-    </form>
-</div>
+<a class="btn btn-primary btn-lg" href="{% url 'animais_lista' %}">Animais: cadastrar e consultar</a>
+<a class="btn btn-primary btn-lg" href="{% url 'registrar_adocao' %}">Registrar adoção</a>
+<a class="btn btn-outline-primary btn-lg" href="{% url 'adocoes_lista' %}">Consultar adoções</a>
+<a class="btn btn-outline-primary btn-lg" href="{% url 'devolucoes' %}">Devoluções</a>
+<a class="btn btn-outline-primary btn-lg" href="{% url 'financeiro' %}">Doações e despesas</a>
+<form method="post" action="{% url 'logout' %}" class="d-grid">{% csrf_token %}<button class="btn btn-secondary btn-lg">Sair</button></form></div>
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
 {% endblock %}

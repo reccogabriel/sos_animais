@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>Adoções</h1><a class="btn btn-primary mb-3" href="{% url 'registrar_adocao' %}">Registrar adoção</a><div class="list-group">{% for obj in pagina %}<a class="list-group-item list-group-item-action" href="{% url 'adocao_detalhe' obj.pk %}">#{{ obj.pk }} — {{ obj.animal.nome }} — {{ obj.data|date:"d/m/Y" }} — {% if obj.ativa %}Ativa{% else %}Encerrada{% endif %}</a>{% empty %}<p>Nenhuma adoção registrada.</p>{% endfor %}</div>{% include 'core/gestao_paginas.html' %}
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}

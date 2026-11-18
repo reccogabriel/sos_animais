@@ -61,3 +61,37 @@ class Animal(models.Model):
 
     def __str__(self):
         return f"{self.nome} — {self.get_especie_display()}"
+
+class Adocao(models.Model):
+    animal = models.ForeignKey(Animal, on_delete=models.PROTECT, related_name="adocoes")
+    nome_adotante = models.CharField("Nome do adotante", max_length=120)
+    telefone = models.CharField("Telefone", max_length=20)
+    data = models.DateField("Data da adoção", default=timezone.localdate)
+    ativa = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-data", "-pk"]
+        constraints = [models.UniqueConstraint(fields=["animal"], condition=models.Q(ativa=True), name="uma_adocao_ativa_animal")]
+
+    def __str__(self):
+        return f"Adoção #{self.pk} — {self.animal}"
+
+
+class Devolucao(models.Model):
+    adocao = models.OneToOneField(Adocao, on_delete=models.PROTECT, related_name="devolucao")
+    data = models.DateField("Data da devolução", default=timezone.localdate)
+    motivo = models.TextField("Motivo")
+
+    class Meta:
+        ordering = ["-data", "-pk"]
+
+
+class Lancamento(models.Model):
+    tipo = models.CharField("Tipo", max_length=7, choices=[("doacao", "Doação"), ("despesa", "Despesa")])
+    data = models.DateField("Data", default=timezone.localdate)
+    valor = models.DecimalField("Valor (R$)", max_digits=12, decimal_places=2)
+    descricao = models.CharField("Descrição", max_length=200)
+
+    class Meta:
+        ordering = ["-data", "-pk"]
+        constraints = [models.CheckConstraint(condition=models.Q(valor__gt=0), name="lancamento_valor_positivo")]

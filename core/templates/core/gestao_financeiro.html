@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>Doações e despesas</h1><p>Controle de registros financeiros, sem pagamento online.</p><div class="alert alert-info">Doações: R$ {{ entradas|floatformat:2 }} · Despesas: R$ {{ saidas|floatformat:2 }} · Saldo dos lançamentos: R$ {{ saldo|floatformat:2 }}</div><form method="post" class="my-4">{% csrf_token %}{% include 'core/gestao_campos.html' %}<button class="btn btn-primary">Salvar lançamento</button></form><h2 class="h4">Lançamentos</h2>{% for obj in pagina %}<article class="card card-body mb-2"><h3 class="h5">{{ obj.get_tipo_display }} — R$ {{ obj.valor|floatformat:2 }}</h3><p>{{ obj.data|date:"d/m/Y" }} — {{ obj.descricao }}</p></article>{% empty %}<p>Nenhum lançamento registrado.</p>{% endfor %}{% include 'core/gestao_paginas.html' %}
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}

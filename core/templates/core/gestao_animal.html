@@ -1,0 +1,8 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>Ficha de {{ animal.nome }}</h1><dl>
+<dt>Espécie</dt><dd>{{ animal.get_especie_display }}</dd><dt>Porte</dt><dd>{{ animal.get_porte_display }}</dd>
+<dt>Data de entrada</dt><dd>{{ animal.data_entrada|date:"d/m/Y" }}</dd><dt>Situação</dt><dd>{{ animal.get_status_display }}</dd><dt>Observações</dt><dd>{{ animal.observacoes|default:"Não informadas"|linebreaksbr }}</dd></dl>
+<a class="btn btn-primary" href="{% url 'animais_lista' %}">Voltar aos animais</a>
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}

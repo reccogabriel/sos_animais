@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>{{ titulo }}</h1><form method="post" class="my-4">{% csrf_token %}{% include 'core/gestao_campos.html' %}<button class="btn btn-primary">Salvar registro</button></form>
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}

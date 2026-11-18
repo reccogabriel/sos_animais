@@ -1,0 +1,7 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1>Animais</h1><p><a class="btn btn-primary" href="{% url 'animal_novo' %}">Cadastrar animal</a></p>
+<form method="get" class="my-3"><label for="q">Buscar pelo nome</label><input class="form-control" id="q" name="q" value="{{ busca }}"><button class="btn btn-outline-primary mt-2">Buscar</button></form>
+<div class="list-group">{% for animal in pagina %}<a class="list-group-item list-group-item-action" href="{% url 'animal_detalhe' animal.pk %}">{{ animal.nome }} — {{ animal.get_especie_display }} — {{ animal.get_status_display }}</a>{% empty %}<p>Nenhum animal cadastrado.</p>{% endfor %}</div>{% include 'core/gestao_paginas.html' %}
+<p class='my-4'><a href="{% url 'menu' %}" class='btn btn-outline-secondary'>Voltar ao menu</a></p>
+{% endblock %}
