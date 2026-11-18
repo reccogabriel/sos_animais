@@ -3,15 +3,13 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.db import connection
 from django.test import SimpleTestCase, TestCase
-from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
 from sos_animais.settings import env_bool, env_lista
 
-from .models import Animal
+from .models import Animal, Adocao
 from .views import CHAVE_SESSAO_RESULTADO, AdocaoPrototipoForm
 
 
@@ -321,78 +319,83 @@ class AdocaoFluxoTests(TestCase):
         self.client.force_login(criar_usuario())
         self.url = reverse("registrar_adocao")
         self.animal = Animal.objects.create(
-            nome="Rex",
-            especie=Animal.Especie.CAO,
+            nome="Rex", especie=Animal.Especie.CAO,
             status=Animal.Status.DISPONIVEL,
+            data_entrada=timezone.localdate() - timedelta(days=7),
         )
 
-    def test_formulario_abre_com_aviso_de_dados_ficticios(self):
+    def dados_validos(self, **alteracoes):
+        dados = {
+            "animal": str(self.animal.pk),
+            "nome_adotante": "Pessoa Fictícia",
+            "telefone": "(17) 99999-0000",
+            "data": timezone.localdate().isoformat(),
+        }
+        dados.update(alteracoes)
+        return dados
+
+    def verificar_sem_gravacao(self):
+        self.assertEqual(Adocao.objects.count(), 0)
+        self.animal.refresh_from_db()
+        self.assertEqual(self.animal.status, Animal.Status.DISPONIVEL)
+
+    def test_formulario_abre_com_animal_do_banco(self):
         resposta = self.client.get(self.url)
-
         self.assertEqual(resposta.status_code, 200)
-        self.assertContains(resposta, "fictícios e fixos no código")
-        self.assertContains(resposta, "não consulta o banco de dados")
+        self.assertTemplateUsed(resposta, "core/gestao_form.html")
+        self.assertContains(resposta, "Registrar adoção")
+        self.assertIn(self.animal, resposta.context["form"].fields["animal"].queryset)
 
-    def test_dados_invalidos_voltam_ao_formulario(self):
-        resposta = self.client.post(
-            self.url,
-            dados_adocao(telefone="(((((((((("),
-        )
-
+    def test_dados_invalidos_nao_gravam_adocao(self):
+        resposta = self.client.post(self.url, self.dados_validos(telefone="(((((((((("))
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("telefone", resposta.context["form"].errors)
-        self.assertNotIn(CHAVE_SESSAO_RESULTADO, self.client.session)
+        self.verificar_sem_gravacao()
 
-    def test_simulacao_valida_mostra_resultado(self):
-        resposta = self.client.post(self.url, dados_adocao())
-
-        # fetch_redirect_response=False: abrir o resultado aqui já
-        # limparia a sessão antes da verificação abaixo.
-        self.assertRedirects(
-            resposta,
-            reverse("resultado_adocao"),
-            fetch_redirect_response=False,
-        )
-
-        resultado = self.client.get(reverse("resultado_adocao"))
-
-        self.assertContains(resultado, "Pessoa Fictícia")
-        self.assertContains(resultado, "(17) 99999-0000")
-
-    def test_resultado_limpa_dados_do_adotante_da_sessao(self):
-        self.client.post(self.url, dados_adocao())
-        self.assertIn(CHAVE_SESSAO_RESULTADO, self.client.session)
-
-        self.client.get(reverse("resultado_adocao"))
-
-        self.assertNotIn(CHAVE_SESSAO_RESULTADO, self.client.session)
-        self.assertRedirects(
-            self.client.get(reverse("resultado_adocao")),
-            self.url,
-        )
-
-    def test_simulacao_nao_grava_nem_altera_animais(self):
-        quantidade_antes = Animal.objects.count()
-        atualizado_antes = self.animal.atualizado_em
-
-        with CaptureQueriesContext(connection) as consultas:
-            self.client.post(self.url, dados_adocao())
-            self.client.get(reverse("resultado_adocao"))
-
+    def test_adocao_valida_grava_e_mostra_detalhe(self):
+        resposta = self.client.post(self.url, self.dados_validos())
+        erros = resposta.context["form"].errors if resposta.status_code == 200 else ""
+        self.assertEqual(resposta.status_code, 302, str(erros))
+        self.assertEqual(Adocao.objects.count(), 1)
+        adocao = Adocao.objects.get()
+        self.assertEqual(adocao.animal_id, self.animal.pk)
+        self.assertEqual(adocao.nome_adotante, "Pessoa Fictícia")
+        self.assertEqual(adocao.telefone, "(17) 99999-0000")
+        self.assertEqual(adocao.data, timezone.localdate())
+        self.assertTrue(adocao.ativa)
         self.animal.refresh_from_db()
-        self.assertEqual(Animal.objects.count(), quantidade_antes)
-        self.assertEqual(self.animal.status, Animal.Status.DISPONIVEL)
-        self.assertEqual(self.animal.atualizado_em, atualizado_antes)
+        self.assertEqual(self.animal.status, Animal.Status.ADOTADO)
+        self.assertRedirects(resposta, reverse("adocao_detalhe", kwargs={"pk": adocao.pk}))
 
-        # Só a tabela de sessões do Django pode receber escrita.
-        comandos_de_escrita = ("INSERT", "UPDATE", "DELETE")
-        escritas = [
-            consulta["sql"]
-            for consulta in consultas.captured_queries
-            if consulta["sql"].lstrip().upper().startswith(comandos_de_escrita)
-            and "django_session" not in consulta["sql"]
-        ]
-        self.assertEqual(escritas, [])
+    def test_animal_adotado_nao_aceita_nova_adocao(self):
+        primeira = self.client.post(self.url, self.dados_validos())
+        self.assertEqual(primeira.status_code, 302)
+        adocao = Adocao.objects.get()
+        resposta = self.client.post(
+            self.url, self.dados_validos(nome_adotante="Outra Pessoa Fictícia")
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("animal", resposta.context["form"].errors)
+        self.assertEqual(Adocao.objects.count(), 1)
+        adocao.refresh_from_db()
+        self.assertTrue(adocao.ativa)
+        self.assertEqual(adocao.nome_adotante, "Pessoa Fictícia")
+        self.animal.refresh_from_db()
+        self.assertEqual(self.animal.status, Animal.Status.ADOTADO)
+
+    def test_data_futura_nao_grava_adocao(self):
+        amanha = timezone.localdate() + timedelta(days=1)
+        resposta = self.client.post(self.url, self.dados_validos(data=amanha.isoformat()))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("data", resposta.context["form"].errors)
+        self.verificar_sem_gravacao()
+
+    def test_data_anterior_a_entrada_nao_grava_adocao(self):
+        anterior = self.animal.data_entrada - timedelta(days=1)
+        resposta = self.client.post(self.url, self.dados_validos(data=anterior.isoformat()))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("data", resposta.context["form"].errors)
+        self.verificar_sem_gravacao()
 
 
 class ConfiguracaoTests(SimpleTestCase):
